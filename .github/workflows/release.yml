@@ -1,0 +1,28 @@
+# Release workflow — placeholder
+# Full workflow is created in Phase 3.
+# See docs/RELEASE.md for the complete pipeline specification.
+#
+# Trigger: push of a version tag (v*) or manual dispatch.
+# Steps (Phase 3 will expand this):
+#   1. pnpm install
+#   2. pnpm --filter core test
+#   3. expo prebuild --platform android
+#   4. gradlew assembleRelease (signed with keystore from secrets)
+#   5. Upload APK artifact
+#   6. Send APK to Telegram via sendDocument
+#
+# Secrets required (ask the owner — never hard-code):
+#   KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD,
+#   TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
+
+name: release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  placeholder:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Phase 3 not yet implemented
+        run: echo "Release pipeline will be built in Phase 3."
