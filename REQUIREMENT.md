@@ -401,3 +401,28 @@ Each screen is designed in Figma first; link frames here once created.
 - Package: pta.pxo.fp. App name: PXO.
 - Keep the keystore and passwords backed up privately; never commit them.
 ```
+
+---
+
+## § Confirmed answers
+
+Owner-approved decisions recorded here. These supplement and, where noted, override the sections above.
+Full implementation plan with per-step file lists is in `docs/PLAN.md`.
+
+| # | Topic | Decision |
+|---|---|---|
+| Q1 | MFS→Cash wallet effect | MFS −= amount+charge; Cash += amount; charge → Cash-out expense via `expense_wallet_lines`. Confirmed as stated in §6.1. |
+| Q2 | Expense wallets | **Multi-wallet.** `expense_wallet_lines` table added; no `wallet_id` column on `expenses`. Overrides the single-wallet assumption in §14. |
+| Q3 | Per-packet rate override UI | **Hidden behind a "Custom rate" toggle** per packet row in the Give Cards form. |
+| Q4 | Merge conflict rule | **Newer `updated_at` wins** when same `id` exists on both sides during Merge restore. Confirmed as stated in §11. |
+| Q5 | Lockout ladder | **×3 escalating:** 5 wrong attempts → first lock at 30 s; each subsequent lock × 3 (30 → 90 → 270 → 810 → …). Correct PIN resets both counters. Confirms §7. |
+| Q6 | Recovery PIN storage | **Build-time GitHub secret** (`RECOVERY_PIN_HASH`). bcrypt hash (cost 10, fixed salt in source) baked into app via `expo-constants`. See `docs/PLAN.md` for exact spec. |
+| Q7 | Figma | **Skipped (owner override).** UI previewed in Expo Go. Overrides §5 Phase 1 and §13 (Figma parts only). Icon and animated splash remain in scope; no Figma MCP calls. |
+| Q8 | Git policy | **Conventional Commits + push to `origin` after each phase commit.** |
+| Q9a | Core test runner | **Vitest** (pure TS; `@vitejs/plugin-react` excluded from core). |
+| Q9b | Bonus cards scope | **Single `bonus_cards` field on `dispatches`** — not per-packet. Confirms §6.3. |
+| Q9c | Allocation mode column | **Single `allocation_mode` TEXT column** with values `auto` / `manual` / `hybrid`. |
+| Q9d | Transfers soft-delete | **Transfers have `archived_at`** — soft-deletable, same as all other tables. |
+| Q9e | Opening balance | **Editable from Settings; retroactive balance effect is intentional.** |
+| Q9f | `KEY_ALIAS` in workflow | **Keep as GitHub secret** (value is always `pxo`, kept per `docs/RELEASE.md`). |
+| Q10 | Recovery PIN in Expo Go | **`.env.local` (git-ignored).** Owner places dev hash there; `expo-constants` reads it in development. |
