@@ -1,28 +1,100 @@
-# Release workflow — placeholder
-# Full workflow is created in Phase 3.
-# See docs/RELEASE.md for the complete pipeline specification.
-#
-# Trigger: push of a version tag (v*) or manual dispatch.
-# Steps (Phase 3 will expand this):
-#   1. pnpm install
-#   2. pnpm --filter core test
-#   3. expo prebuild --platform android
-#   4. gradlew assembleRelease (signed with keystore from secrets)
-#   5. Upload APK artifact
-#   6. Send APK to Telegram via sendDocument
-#
-# Secrets required (ask the owner — never hard-code):
-#   KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD,
-#   TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
-
 name: release
 
 on:
+  push:
+    tags:
+      - 'v*'
   workflow_dispatch:
 
 jobs:
-  placeholder:
+  build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Phase 3 not yet implemented
-        run: echo "Release pipeline will be built in Phase 3."
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+          run_install: false
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run core tests
+        run: pnpm --filter core test
+
+      - name: Set up Java (for Gradle)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Decode keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > /tmp/pxo-release.jks
+
+      - name: Expo prebuild (Android)
+        working-directory: apps/mobile
+        env:
+          RECOVERY_PIN_HASH: ${{ secrets.RECOVERY_PIN_HASH }}
+        run: npx expo prebuild --platform android --non-interactive
+
+      - name: Build release APK
+        working-directory: apps/mobile/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon \
+            -PMYAPP_UPLOAD_STORE_FILE=/tmp/pxo-release.jks \
+            -DMYAPP_UPLOAD_STORE_FILE=/tmp/pxo-release.jks \
+            -PMYAPP_UPLOAD_KEY_ALIAS="${{ secrets.KEY_ALIAS }}" \
+            -PMYAPP_UPLOAD_STORE_PASSWORD="${{ secrets.KEYSTORE_PASSWORD }}" \
+            -PMYAPP_UPLOAD_KEY_PASSWORD="${{ secrets.KEY_PASSWORD }}"
+
+      - name: Locate APK
+        id: apk
+        run: |
+          APK=$(find apps/mobile/android -name "*.apk" -path "*/release/*" | head -1)
+          echo "APK_PATH=$APK" >> $GITHUB_OUTPUT
+          echo "APK_NAME=$(basename $APK)" >> $GITHUB_OUTPUT
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pxo-release-apk
+          path: ${{ steps.apk.outputs.APK_PATH }}
+          retention-days: 30
+
+      - name: Send APK to Telegram
+        run: |
+          curl -f -X POST \
+            "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendDocument" \
+            -F "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -F "document=@${{ steps.apk.outputs.APK_PATH }}" \
+            -F "caption=PXO release APK — ${{ github.ref_name }}"
+
+      - name: Remove keystore from runner
+        if: always()
+        run: rm -f /tmp/pxo-release.jks
