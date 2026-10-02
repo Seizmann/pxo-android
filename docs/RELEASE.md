@@ -40,8 +40,6 @@ Set these in the repository → Settings → Secrets → Actions. **Never hard-c
 | `KEYSTORE_PASSWORD` | store password chosen at keytool time |
 | `KEY_ALIAS` | `pxo` |
 | `KEY_PASSWORD` | key password chosen at keytool time |
-| `TELEGRAM_BOT_TOKEN` | bot token from @BotFather |
-| `TELEGRAM_CHAT_ID` | chat/channel ID to receive the APK |
 
 Ask the owner for all values. Never guess or generate them.
 
@@ -59,9 +57,9 @@ Steps:
 5. Decode `KEYSTORE_BASE64` → `pxo-release.jks` in the runner.
 6. `expo prebuild --platform android` in `apps/mobile`.
 7. `./gradlew assembleRelease` with signing config injected via environment variables.
-8. Upload the APK as a GitHub Actions artifact.
-9. Send the APK to Telegram via `sendDocument` (multipart POST to the Bot API).
-10. Remove the keystore file from the runner.
+8. Upload the APK as a GitHub Actions artifact (owner downloads it from the run's
+   artifacts).
+9. Remove the keystore file from the runner.
 
 ---
 

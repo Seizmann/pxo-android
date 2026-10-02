@@ -90,14 +90,6 @@ jobs:
           path: ${{ steps.apk.outputs.APK_PATH }}
           retention-days: 30
 
-      - name: Send APK to Telegram
-        run: |
-          curl -f -X POST \
-            "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendDocument" \
-            -F "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
-            -F "document=@${{ steps.apk.outputs.APK_PATH }}" \
-            -F "caption=PXO release APK — ${{ github.ref_name }}"
-
       - name: Remove keystore from runner
         if: always()
         run: rm -f /tmp/pxo-release.jks

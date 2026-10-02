@@ -14,8 +14,8 @@ Read `REQUIREMENT.md` first. It is the single source of truth.
 - **Every record carries:** `id` (UUID v4), `entry_date` (user-editable ISO date),
   `created_at`, `updated_at` (auto timestamps), `archived_at` (nullable soft-delete).
 - **English UI only.** Offline only. No network access at runtime.
-- **Never commit secrets:** keystore file, store/key passwords, Telegram bot token,
-  Telegram chat ID, or the recovery PIN hash. Ask the owner when they are needed.
+- **Never commit secrets:** keystore file, store/key passwords, or the recovery PIN hash.
+  Ask the owner when they are needed.
 - **No local APK builds.** Development preview via Expo Go.
   All release APKs are built by GitHub Actions only.
 - **pnpm only.** `.npmrc` must contain `node-linker=hoisted` so Metro resolves packages.
@@ -49,6 +49,4 @@ pnpm --filter core typecheck        # TypeScript check for core
 
 - Keystore store password
 - Keystore key password  
-- Telegram bot token
-- Telegram chat ID
 - Recovery PIN (for hash derivation)

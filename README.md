@@ -25,8 +25,8 @@ pnpm --filter mobile start
 pnpm --filter core test
 ```
 
-> **No local APK builds.** All release APKs are produced by GitHub Actions and
-> delivered to Telegram automatically.
+> **No local APK builds.** All release APKs are produced by GitHub Actions; download
+> the APK from the workflow run's artifacts.
 
 ## Workspace layout
 
@@ -44,5 +44,5 @@ pxo-android/
 | 0 | Docs and folder structure (done) |
 | 1 | Figma UI/UX design via Figma MCP |
 | 2 | pnpm workspace setup, core package, mobile app |
-| 3 | GitHub Actions release pipeline + Telegram delivery |
+| 3 | GitHub Actions release pipeline |
 | 4 | Testing on device (Expo Go) and release APK verification |

@@ -438,8 +438,6 @@ PIN change works. Animated splash plays in Expo Go.
 | `KEYSTORE_PASSWORD` | keystore store password |
 | `KEY_ALIAS` | always `pxo`; kept as a secret per `docs/RELEASE.md` |
 | `KEY_PASSWORD` | key password |
-| `TELEGRAM_BOT_TOKEN` | bot token from @BotFather |
-| `TELEGRAM_CHAT_ID` | chat/channel to receive the APK |
 | `RECOVERY_PIN_HASH` | bcrypt hash of recovery PIN (owner pre-computes) |
 
 **Files changed:**
@@ -458,9 +456,8 @@ apps/mobile/app.json             verify extra.recoveryPinHash present (set in St
 5. Decode `KEYSTORE_BASE64` → `pxo-release.jks` on runner
 6. `expo prebuild --platform android` in `apps/mobile` (env `RECOVERY_PIN_HASH` set from secret)
 7. `./gradlew assembleRelease` (signing env vars: `KEYSTORE_PATH`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`)
-8. Upload APK as GitHub Actions artifact
-9. `curl` POST to `https://api.telegram.org/bot$TOKEN/sendDocument`
-10. Delete `pxo-release.jks` from runner
+8. Upload APK as GitHub Actions artifact (owner downloads the APK from the run's artifacts)
+9. Delete `pxo-release.jks` from runner
 
 Trigger: push of `v*` tags **and** `workflow_dispatch`.
 

@@ -48,7 +48,7 @@
 | PIN storage | `expo-secure-store` (never in the SQLite DB, never in backup) |
 | Backup | Single **JSON** file; restore from the same JSON |
 | Dev preview | Expo Go on the phone, dev server on the owner's local PC |
-| Release build | **GitHub Actions only** (no local APK build), APK sent to Telegram |
+| Release build | **GitHub Actions only** (no local APK build), APK downloaded from the workflow run's artifacts |
 | Repo model | Polyrepo (this repo only), pnpm workspace inside it |
 
 The owner's AI agent runs on his **local computer**. There is no cloud agent.
@@ -100,10 +100,10 @@ pxo-android/
 | **0** | Create `AGENT.md`, `CLAUDE.md`, `README.md`, `docs/DATA_MODEL.md`, `docs/SCREENS.md`, `docs/RELEASE.md` from section 15 drafts. Fix/extend them where this file is clearer. |
 | **1** | Design the full app UI/UX in **Figma via Figma MCP**: every screen and sheet in section 9, plus a generated app icon and an animated splash concept. |
 | **2** | Set up the pnpm workspace, `packages/core` (logic + tests), then `apps/mobile` from the Figma design. |
-| **3** | GitHub Actions release pipeline and Telegram delivery (section 12). |
+| **3** | GitHub Actions release pipeline (section 12). |
 | **4** | Test on the phone with Expo Go, then verify the release APK (splash/icon only show correctly there). |
 
-**Ask the owner** (never guess, never commit these): Telegram bot token, Telegram chat ID, keystore store password, keystore key password, the fixed recovery PIN.
+**Ask the owner** (never guess, never commit these): keystore store password, keystore key password, the fixed recovery PIN.
 
 ---
 
@@ -262,7 +262,7 @@ Derived (never stored): stock, packet due, seller due, wallet balances, bonus va
 ## 12. Release pipeline (GitHub Actions only)
 
 - **No local APK builds.** The owner tests with Expo Go; releases are built by GitHub Actions.
-- Workflow (`.github/workflows/release.yml`): install pnpm, run `packages/core` tests, `expo prebuild` for Android, `gradlew assembleRelease` signed with the release keystore, upload the APK as an artifact, then send it to Telegram with `sendDocument`.
+- Workflow (`.github/workflows/release.yml`): install pnpm, run `packages/core` tests, `expo prebuild` for Android, `gradlew assembleRelease` signed with the release keystore, upload the APK as an artifact. The owner downloads the APK from that workflow run's artifacts (no Telegram or other external delivery).
 - Signing keystore (create once with `keytool`, never commit the file):
 
 ```
@@ -273,7 +273,7 @@ keytool -genkeypair -v -keystore pxo-release.jks -alias pxo \
 
   (File `pxo-release.jks`, alias `pxo`, 30 years, no OU.) `keytool` only needs a JDK. If the owner has no JDK, create it with a one-off `workflow_dispatch` workflow instead. The owner must keep a safe copy of the keystore and passwords; if they are lost, updates to installed APKs are impossible.
 - GitHub Secrets to set (ask the owner for values, **never** hard-code or log):
-  `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS` (= `pxo`), `KEY_PASSWORD`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`.
+  `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS` (= `pxo`), `KEY_PASSWORD`.
 - `android.package` in `app.json` must be `pta.pxo.fp`; app name `PXO`.
 
 ---
@@ -301,7 +301,7 @@ keytool -genkeypair -v -keystore pxo-release.jks -alias pxo \
 - [ ] Manual backup/restore (replace and merge), no PIN in JSON, timestamped file name
 - [ ] Date and timestamp on every record
 - [ ] `packages/core` tests pass in CI
-- [ ] Release APK arrives on Telegram, signed with the keystore
+- [ ] Release APK available as a workflow-run artifact (owner downloads it), signed with the keystore
 - [ ] English-only UI
 
 ### Open assumptions to confirm with the owner
@@ -328,7 +328,7 @@ Read `REQUIREMENT.md` first. It is the source of truth.
 - Never store balances, stock or due. Always derive from entries.
 - Money = integer poisha. Every record: id (UUID), entry_date, created_at, updated_at, archived_at.
 - English UI only. Offline only. No network features.
-- Never commit secrets: keystore, passwords, Telegram token/chat ID, recovery PIN.
+- Never commit secrets: keystore, passwords, recovery PIN.
 - Ask the owner for secrets; do not invent them.
 - No local APK builds. Preview with Expo Go. Releases via GitHub Actions.
 - pnpm only. `.npmrc` has `node-linker=hoisted`.
@@ -362,7 +362,7 @@ Read `REQUIREMENT.md` first. It is the source of truth.
 Offline Android app (Expo, React Native, TypeScript) to manage the PTA card business.
 Package: pta.pxo.fp. Docs: REQUIREMENT.md, docs/.
 Dev: pnpm install, then pnpm --filter mobile start and open in Expo Go.
-Release: GitHub Actions builds the APK and sends it to Telegram.
+Release: GitHub Actions builds the APK; download it from the workflow run's artifacts.
 ```
 
 ### 15.4 `docs/DATA_MODEL.md`
@@ -394,10 +394,9 @@ Each screen is designed in Figma first; link frames here once created.
 ```markdown
 # Release
 - Signed by GitHub Actions only. Keystore pxo-release.jks (alias pxo, RSA 2048, 30 years).
-- Secrets: KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD,
-  TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID.
+- Secrets: KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD.
 - Steps: pnpm install, core tests, expo prebuild android, gradlew assembleRelease,
-  upload artifact, Telegram sendDocument.
+  upload artifact (APK downloaded from the run's artifacts).
 - Package: pta.pxo.fp. App name: PXO.
 - Keep the keystore and passwords backed up privately; never commit them.
 ```
