@@ -11,7 +11,7 @@
     "@expo/vector-icons": "^14.0.0",
     "@gorhom/bottom-sheet": "^4.6.4",
     "@pxo/core": "workspace:*",
-    "@react-native-community/datetimepicker": "^8.2.0",
+    "@react-native-community/datetimepicker": "8.0.1",
     "bcryptjs": "^2.4.3",
     "date-fns": "^3.6.0",
     "expo": "~51.0.0",
