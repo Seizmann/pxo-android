@@ -1,12 +1,23 @@
+import { useState } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StyleSheet } from 'react-native';
 import { useDb } from '../src/hooks/useDb';
+import { AnimatedSplash } from '../src/components/AnimatedSplash';
 
 export default function RootLayout() {
-  // Initialise DB on mount; child screens use useDb() to access the same instance
   useDb();
+  const [splashDone, setSplashDone] = useState(false);
+
+  if (!splashDone) {
+    return (
+      <GestureHandlerRootView style={styles.root}>
+        <StatusBar style="light" />
+        <AnimatedSplash onFinish={() => setSplashDone(true)} />
+      </GestureHandlerRootView>
+    );
+  }
 
   return (
     <GestureHandlerRootView style={styles.root}>
