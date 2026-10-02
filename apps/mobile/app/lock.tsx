@@ -2,12 +2,13 @@ import React, { useCallback, useEffect, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
-  SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
 import { usePinLock } from '../src/hooks/usePinLock';
 import { PinKeypad } from '../src/components/PinKeypad';
@@ -157,6 +158,7 @@ export default function LockScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
+      <StatusBar style="light" />
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}

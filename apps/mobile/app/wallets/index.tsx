@@ -1,13 +1,13 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   Alert,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { formatTaka } from '@pxo/core';
 import { useDb } from '../../src/hooks/useDb';
 import { useWalletBalances } from '../../src/hooks/useWalletBalances';
