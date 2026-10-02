@@ -26,12 +26,6 @@
       "expo-router",
       "expo-secure-store",
       [
-        "expo-sqlite",
-        {
-          "enableFTS": false
-        }
-      ],
-      [
         "react-native-reanimated",
         {}
       ]
